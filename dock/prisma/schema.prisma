@@ -1,0 +1,25 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Berth {
+  id         Int       @id @default(autoincrement())
+  name       String    @unique
+  lengthFeet Int
+  bookings   Booking[]
+}
+
+model Booking {
+  id          Int      @id @default(autoincrement())
+  berth       Berth    @relation(fields: [berthId], references: [id])
+  berthId     Int
+  vesselName  String
+  startDate   DateTime
+  endDate     DateTime
+  isEvent     Boolean  @default(false)
+}
