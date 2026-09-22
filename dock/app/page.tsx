@@ -1,15 +1,17 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, Berth, Booking } from '@prisma/client';
 import NewBookingForm from './NewBookingForm';
 
 const prisma = new PrismaClient();
 
+type BerthWithBookings = Berth & { bookings: Booking[] };
+
 export default async function Home() {
-  const berths = await prisma.berth.findMany({
+  const berths: BerthWithBookings[] = await prisma.berth.findMany({
     include: { bookings: { orderBy: { startDate: 'asc' } } },
     orderBy: { name: 'asc' },
   });
 
-  const totalBookings = berths.reduce((sum, b) => sum + b.bookings.length, 0);
+  const totalBookings = berths.reduce((sum: number, b: BerthWithBookings) => sum + b.bookings.length, 0);
 
   return (
     <main className="min-h-screen bg-slate-50">
@@ -25,11 +27,13 @@ export default async function Home() {
       <div className="mx-auto max-w-5xl px-6 py-8">
         <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
           <h2 className="mb-4 text-lg font-medium text-slate-900">New booking</h2>
-          <NewBookingForm berths={berths.map((b) => ({ id: b.id, name: b.name, lengthFeet: b.lengthFeet }))} />
+          <NewBookingForm
+            berths={berths.map((b: BerthWithBookings) => ({ id: b.id, name: b.name, lengthFeet: b.lengthFeet }))}
+          />
         </section>
 
         <section className="mt-8 space-y-4">
-          {berths.map((berth) => (
+          {berths.map((berth: BerthWithBookings) => (
             <div key={berth.id} className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
               <div className="flex items-baseline justify-between">
                 <h3 className="text-base font-semibold text-slate-900">{berth.name}</h3>
@@ -40,7 +44,7 @@ export default async function Home() {
                 <p className="mt-2 text-sm text-slate-400">No bookings</p>
               ) : (
                 <ul className="mt-3 divide-y divide-slate-100">
-                  {berth.bookings.map((b) => (
+                  {berth.bookings.map((b: Booking) => (
                     <li key={b.id} className="flex items-center justify-between py-2 text-sm">
                       <span className="flex items-center gap-2">
                         <span
